@@ -1,0 +1,22 @@
+{
+  "aktobe_ecash": {
+    "USD": {
+      "name": "доллар США",
+      "buy": 495,
+      "sell": 500,
+      "updated_at": "15:30"
+    },
+    "EUR": {
+      "name": "евро",
+      "buy": 540,
+      "sell": 550,
+      "updated_at": "15:30"
+    },
+    "RUB": {
+      "name": "российский рубль",
+      "buy": 6,
+      "sell": 6.5,
+      "updated_at": "15:30"
+    }
+  }
+}
