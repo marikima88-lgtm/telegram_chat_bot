@@ -83,16 +83,21 @@ class RateProvider:
 
         return None
 
+    _EXCLUDED_GOLD_CODES = {"GOLD5", "GOLD10", "GOLD20", "GOLD50", "GOLD100"}
+
     def _normalize_api_payload(self, branch_data: dict[str, Any]) -> dict[str, Any]:
         result: dict[str, Any] = {}
         for currency in branch_data.get("currencies", []):
             if not currency.get("isActive"):
                 continue
+            code = currency.get("code", "").upper()
+            if code in self._EXCLUDED_GOLD_CODES:
+                continue
             rate_list = currency.get("rateList") or []
             if not rate_list:
                 continue
             rate_item = rate_list[0]
-            result[currency.get("code", "").upper()] = {
+            result[code] = {
                 "name": currency.get("description") or currency.get("code", ""),
                 "buy": Decimal(str(rate_item.get("buy", 0))),
                 "sell": Decimal(str(rate_item.get("sale", 0))),
@@ -126,12 +131,8 @@ class RateProvider:
     def format_rate(self, rate: dict[str, Any], currency_code: str) -> str:
         buy = Decimal(str(rate["buy"]))
         sell = Decimal(str(rate["sell"]))
-        updated = rate.get("updated_at", "—")
-        source_note = "Демонстрационные данные" if rate.get("source") != "api" else "Актуальные данные из Quiq"
         return (
             f"{currency_code} — {rate.get('name', currency_code)}\n\n"
             f"Покупка: {buy.quantize(Decimal('1'))} ₸\n"
-            f"Продажа: {sell.quantize(Decimal('1'))} ₸\n\n"
-            f"{source_note}\n"
-            f"Обновлено: {updated}"
+            f"Продажа: {sell.quantize(Decimal('1'))} ₸"
         )

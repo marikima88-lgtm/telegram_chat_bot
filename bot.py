@@ -18,6 +18,7 @@ from handlers import (
     services_router,
     start_router,
 )
+from middlewares import LanguageMiddleware
 from services import start_notification_worker
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -31,6 +32,8 @@ async def main() -> None:
 
     bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     dp = Dispatcher(storage=MemoryStorage())
+    dp.message.outer_middleware(LanguageMiddleware())
+    dp.callback_query.outer_middleware(LanguageMiddleware())
 
     dp.include_router(start_router)
     dp.include_router(rates_router)

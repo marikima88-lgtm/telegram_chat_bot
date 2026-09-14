@@ -52,6 +52,32 @@ async def init_db() -> None:
             )
             """
         )
+        cursor = await conn.execute("PRAGMA table_info(users)")
+        user_columns = {row[1] for row in await cursor.fetchall()}
+        if "language" not in user_columns:
+            await conn.execute("ALTER TABLE users ADD COLUMN language TEXT")
+        await conn.commit()
+
+
+async def get_user_language(telegram_user_id: int) -> str | None:
+    async with aiosqlite.connect(DB_PATH) as conn:
+        cursor = await conn.execute("SELECT language FROM users WHERE telegram_user_id = ?", (telegram_user_id,))
+        row = await cursor.fetchone()
+    return row[0] if row else None
+
+
+async def set_user_language(telegram_user_id: int, language: str) -> None:
+    now = datetime.utcnow().isoformat()
+    async with aiosqlite.connect(DB_PATH) as conn:
+        await conn.execute(
+            """
+            INSERT INTO users (telegram_user_id, language, created_at, updated_at) VALUES (?, ?, ?, ?)
+            ON CONFLICT(telegram_user_id) DO UPDATE SET
+                language=excluded.language,
+                updated_at=excluded.updated_at
+            """,
+            (telegram_user_id, language, now, now),
+        )
         await conn.commit()
 
 

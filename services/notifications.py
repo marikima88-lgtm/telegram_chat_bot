@@ -5,7 +5,8 @@ from datetime import datetime
 from aiogram import Bot
 
 from config import ALERT_CHECK_INTERVAL_MINUTES
-from database import deactivate_rate_alert, list_active_rate_alerts
+from database import deactivate_rate_alert, get_user_language, list_active_rate_alerts
+from i18n import t
 from services.rate_provider import RateProvider
 
 logger = logging.getLogger(__name__)
@@ -18,9 +19,10 @@ def should_trigger_alert(current_rate: float | int | str, target_rate: float | i
     except (TypeError, ValueError):
         return False
 
-    if condition_type == "above":
+    # В базе условие хранится как ">=" / "<=" (кнопки «Не ниже» / «Не выше»).
+    if condition_type in ("above", ">="):
         return current_value >= target_value
-    if condition_type == "below":
+    if condition_type in ("below", "<="):
         return current_value <= target_value
     return False
 
@@ -45,10 +47,12 @@ async def check_alerts(bot: Bot) -> None:
         rate = await provider.get_rate(branch_id, currency_code)
         if not rate:
             continue
-        current_rate = rate.get("buy") or rate.get("sell")
+        current_rate = rate.get(alert.get("rate_type") or "buy") or rate.get("buy") or rate.get("sell")
         if current_rate is None:
             continue
 
         if should_trigger_alert(current_rate, alert.get("target_rate") or 0, alert.get("condition_type") or "above"):
-            await bot.send_message(alert.get("telegram_user_id"), f"Уведомление: {currency_code} достиг {current_rate}")
+            user_id = alert.get("telegram_user_id")
+            lang = await get_user_language(user_id)
+            await bot.send_message(user_id, t("alert_triggered", lang, code=currency_code, rate=current_rate))
             await deactivate_rate_alert(alert.get("id"))
