@@ -16,7 +16,8 @@ if ADMIN_CHAT_ID:
     except ValueError:
         ADMIN_CHAT_ID = None
 
-DB_PATH = BASE_DIR / "database.db"
+# В контейнере база лежит на примонтированном томе, поэтому путь настраивается.
+DB_PATH = Path(os.getenv("DB_PATH") or BASE_DIR / "database.db")
 BRANCHES_PATH = BASE_DIR / "data" / "branches.json"
 CURRENCIES_PATH = BASE_DIR / "data" / "currencies.json"
 

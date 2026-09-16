@@ -1,0 +1,26 @@
+# Окружение и кеши — пересоздаются при сборке
+.venv/
+__pycache__/
+*.py[cod]
+
+# Секреты в образ не кладём, они передаются через переменные окружения
+.env
+
+# Локальная база
+database.db
+bot.log
+
+# Служебное
+.git/
+.gitignore
+.vscode/
+.claude/
+.DS_Store
+
+# Не нужно боту в рантайме
+tests/
+wiki/
+README.md
+Dockerfile
+.dockerignore
+docker-compose.yml

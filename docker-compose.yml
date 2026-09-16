@@ -1,0 +1,19 @@
+services:
+  bot:
+    build: .
+    image: ecash-bot:latest
+    container_name: ecash-bot
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DB_PATH: /data/database.db
+    volumes:
+      - bot-data:/data
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  bot-data:
